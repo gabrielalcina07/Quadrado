@@ -1,0 +1,166 @@
+<!--
+Programa: Jogo de Colisão
+Nome: Eduardo Rodrigues - Nº: 06 - Turma: 2°B
+Nome: Enzo Casanova - Nº: 07
+Nome: Gabriel Oliveira - Nº: 09
+Nome: Kauã Stelin - Nº: 16
+DESCRIÇÃO: O nosso código cria um jogo de colisão, onde tem dois componentes(players) o azul é controlado pelas teclas W,A,S,D e o vermelho é controlado pelas setinhas, se os dois se colidirem o jogo acaba.
+-->
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jogo de Colisão</title>
+    <link rel="stylesheet" href="jogo.css">
+</head>
+<body onload="startGame();">
+    <canvas id="gameCanvas" width="800" height="400"></canvas>
+    <div class="controls">
+        <button id="w">Cima (W)</button>
+        <button id="s">Baixo (S)</button>
+        <button id="a">Esquerda (A)</button>
+        <button id="d">Direita (D)</button>
+        <br>
+        <button id="ArrowUp">Cima (↑)</button>
+        <button id="ArrowDown">Baixo (↓)</button>
+        <button id="ArrowLeft">Esquerda (←)</button>
+        <button id="ArrowRight">Direita (→)</button>
+    </div>
+
+    <script>
+        var myGameArea = {
+            canvas: document.getElementById('gameCanvas'),
+            start: function() {
+                this.context = this.canvas.getContext('2d');
+                this.interval = setInterval(updateGameArea, 1000 / 60);
+                window.addEventListener('keydown', keyDown);
+                window.addEventListener('keyup', keyUp);
+            },
+            clear: function() {
+                this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            },
+            stop: function() {
+                clearInterval(this.interval);
+            }
+        };
+
+        var player1 = new component(30, 30, "blue", 50, 50);
+        var player2 = new component(30, 30, "red", 700, 50);
+
+        function component(width, height, color, x, y) {
+            this.width = width;
+            this.height = height;
+            this.color = color;
+            this.x = x;
+            this.y = y;
+            this.speed = 5;
+            this.moving = { up: false, down: false, left: false, right: false };
+
+            this.update = function() {
+                ctx = myGameArea.context;
+                ctx.fillStyle = this.color;
+                ctx.fillRect(this.x, this.y, this.width, this.height);
+            };
+
+            this.newPos = function() {
+                if (this.moving.up && this.y > 0) this.y -= this.speed;
+                if (this.moving.down && this.y < myGameArea.canvas.height - this.height) this.y += this.speed;
+                if (this.moving.left && this.x > 0) this.x -= this.speed;
+                if (this.moving.right && this.x < myGameArea.canvas.width - this.width) this.x += this.speed;
+            };
+        }
+
+        function updateGameArea() {
+            myGameArea.clear();
+            player1.newPos();
+            player2.newPos();
+            player1.update();
+            player2.update();
+
+            if (detectCollision(player1, player2)) {
+                alert("COLISÃO DETECTADA");
+                resetGame();
+            }
+        }
+
+        function detectCollision(playerA, playerB) {
+            return !(playerA.x > playerB.x + playerB.width ||
+                     playerA.x + playerA.width < playerB.x ||
+                     playerA.y > playerB.y + playerB.height ||
+                     playerA.y + playerA.height < playerB.y);
+        }
+
+        function resetGame() {
+            player1.x = 50; player1.y = 50;
+            player2.x = 700; player2.y = 50;
+            player1.moving = { up: false, down: false, left: false, right: false };
+            player2.moving = { up: false, down: false, left: false, right: false };
+        }
+
+        function keyDown(event) {
+            switch (event.key) {
+                case 'w': player1.moving.up = true; break;
+                case 's': player1.moving.down = true; break;
+                case 'a': player1.moving.left = true; break;
+                case 'd': player1.moving.right = true; break;
+                case 'ArrowUp': player2.moving.up = true; break;
+                case 'ArrowDown': player2.moving.down = true; break;
+                case 'ArrowLeft': player2.moving.left = true; break;
+                case 'ArrowRight': player2.moving.right = true; break;
+            }
+        }
+
+        function keyUp(event) {
+            switch (event.key) {
+                case 'w': player1.moving.up = false; break;
+                case 's': player1.moving.down = false; break;
+                case 'a': player1.moving.left = false; break;
+                case 'd': player1.moving.right = false; break;
+                case 'ArrowUp': player2.moving.up = false; break;
+                case 'ArrowDown': player2.moving.down = false; break;
+                case 'ArrowLeft': player2.moving.left = false; break;
+                case 'ArrowRight': player2.moving.right = false; break;
+            }
+        }
+
+        function buttonDown(player, direction) {
+            player.moving[direction] = true;
+        }
+
+        function buttonUp(player, direction) {
+            player.moving[direction] = false;
+        }
+
+        document.getElementById('w').addEventListener('mousedown', () => buttonDown(player1, 'up'));
+        document.getElementById('w').addEventListener('mouseup', () => buttonUp(player1, 'up'));
+
+        document.getElementById('s').addEventListener('mousedown', () => buttonDown(player1, 'down'));
+        document.getElementById('s').addEventListener('mouseup', () => buttonUp(player1, 'down'));
+
+        document.getElementById('a').addEventListener('mousedown', () => buttonDown(player1, 'left'));
+        document.getElementById('a').addEventListener('mouseup', () => buttonUp(player1, 'left'));
+
+        document.getElementById('d').addEventListener('mousedown', () => buttonDown(player1, 'right'));
+        document.getElementById('d').addEventListener('mouseup', () => buttonUp(player1, 'right'));
+
+        document.getElementById('ArrowUp').addEventListener('mousedown', () => buttonDown(player2, 'up'));
+        document.getElementById('ArrowUp').addEventListener('mouseup', () => buttonUp(player2, 'up'));
+
+        document.getElementById('ArrowDown').addEventListener('mousedown', () => buttonDown(player2, 'down'));
+        document.getElementById('ArrowDown').addEventListener('mouseup', () => buttonUp(player2, 'down'));
+
+        document.getElementById('ArrowLeft').addEventListener('mousedown', () => buttonDown(player2, 'left'));
+        document.getElementById('ArrowLeft').addEventListener('mouseup', () => buttonUp(player2, 'left'));
+
+        document.getElementById('ArrowRight').addEventListener('mousedown', () => buttonDown(player2, 'right'));
+        document.getElementById('ArrowRight').addEventListener('mouseup', () => buttonUp(player2, 'right'));
+
+
+        function startGame() {
+            myGameArea.start();
+        }
+    </script>
+</body>
+</html>
